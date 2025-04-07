@@ -160,6 +160,29 @@ def seasonal_STM(img_col):
     
     return ee.ImageCollection.fromImages([april_june_stm, july_september_stm])
 
+# seasonal STMs (Spring and Summer) for 2023 and 2024
+def seasonal_STM_2324(img_col):
+    def apply_reducers(year, start_month, end_month):
+        start_date = ee.Date.fromYMD(year, start_month, 1)
+        end_date = ee.Date.fromYMD(year, end_month, 30)
+        seasonal_col = img_col.filterDate(start_date, end_date)
+        stm = seasonal_col.reduce(allMetrics)
+        return stm.set('year', year).set('start_month', start_month).set('end_month', end_month)
+    
+    # Calculate STMs for 2023 and 2024
+    april_june_2023 = apply_reducers(2023, 4, 6)
+    july_september_2023 = apply_reducers(2023, 7, 9)
+    april_june_2024 = apply_reducers(2024, 4, 6)
+    july_september_2024 = apply_reducers(2024, 7, 9)
+    
+    # Combine all STMs into an ImageCollection
+    return ee.ImageCollection.fromImages([
+        april_june_2023, 
+        july_september_2023, 
+        april_june_2024, 
+        july_september_2024
+    ])
+
 # Add the Earth Engine layer method to folium.
 folium.Map.add_ee_layer = add_ee_layer
 
